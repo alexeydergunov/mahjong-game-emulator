@@ -133,10 +133,10 @@ class DuplicateWall(Wall):
 
     def get_wall_info(self) -> str:
         result = "\n"
-        result += "East start hand: " + str(sorted(self.start_hands[0])) + "\n"
-        result += "South start hand: " + str(sorted(self.start_hands[1])) + "\n"
-        result += "West start hand: " + str(sorted(self.start_hands[2])) + "\n"
-        result += "North start hand: " + str(sorted(self.start_hands[3])) + "\n"
+        result += "East start hand: " + str(sorted(self.start_hands[0], key=lambda x: TILES.index(x))) + "\n"
+        result += "South start hand: " + str(sorted(self.start_hands[1], key=lambda x: TILES.index(x))) + "\n"
+        result += "West start hand: " + str(sorted(self.start_hands[2], key=lambda x: TILES.index(x))) + "\n"
+        result += "North start hand: " + str(sorted(self.start_hands[3], key=lambda x: TILES.index(x))) + "\n"
         result += "East wall: " + str(self.walls[0]) + "\n"
         result += "South wall: " + str(self.walls[1]) + "\n"
         result += "West wall: " + str(self.walls[2]) + "\n"
