@@ -106,7 +106,7 @@ class DuplicateWall(Wall):
                 self.start_hands[player_id].append(all_tiles.pop())
 
         for player_id in range(4):
-            self.start_hands.append([])
+            self.walls.append([])
             for i in range(18):
                 self.walls[player_id].append(all_tiles.pop())
 

@@ -1,12 +1,13 @@
 import logging
 
 from emulator.emulator import SingleRoundEmulator
-from emulator.wall import StandardWall
+# noinspection PyUnresolvedReferences
+from emulator.wall import StandardWall, DuplicateWall
 
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    wall = StandardWall(seed=322)
+    wall = StandardWall(seed=324)
     emulator = SingleRoundEmulator(
         round_wind="E",
         round_id=1,
