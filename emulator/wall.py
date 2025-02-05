@@ -1,9 +1,10 @@
 import random
+from typing import Any
 
 from mortal.mortal_helpers import TILES
 
 
-def get_all_tiles(shuffle: bool) -> list[str]:
+def get_all_tiles(seed: Any) -> list[str]:
     all_tiles: list[str] = []
     for tile in TILES:
         count = 4
@@ -14,8 +15,8 @@ def get_all_tiles(shuffle: bool) -> list[str]:
         for i in range(count):
             all_tiles.append(tile)
     assert len(all_tiles) == 136
-    if shuffle:
-        random.shuffle(all_tiles)
+    random.seed(seed)
+    random.shuffle(all_tiles)
     return all_tiles
 
 
@@ -43,8 +44,8 @@ class Wall:
 
 
 class StandardWall(Wall):
-    def __init__(self):
-        self.wall = get_all_tiles(shuffle=True)
+    def __init__(self, seed: Any):
+        self.wall = get_all_tiles(seed=seed)
 
         self.kan_count: int = 0
         self.pointer: int = 0
@@ -90,14 +91,14 @@ class StandardWall(Wall):
 
 
 class DuplicateWall(Wall):
-    def __init__(self):
+    def __init__(self, seed: Any):
         self.start_hands: list[list[str]] = []
         self.walls: list[list[str]] = []
         self.dead_wall: list[str] = []
         self.pointers: list[int] = [0] * 4
         self.kan_count: int = 0
 
-        all_tiles = get_all_tiles(shuffle=True)
+        all_tiles = get_all_tiles(seed=seed)
 
         for player_id in range(4):
             self.start_hands.append([])

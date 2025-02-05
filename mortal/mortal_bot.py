@@ -10,7 +10,7 @@ class MortalBot:
         self.player_id = player_id
         self.model = mortal_model.load_model(seat=player_id, pth_file=pth_file)
 
-    def react_all(self, events: list[MortalEvent], with_meta: bool = True) -> list[MortalEvent]:
+    def react_all(self, events: list[MortalEvent], with_meta: bool = True, with_nulls: bool = False) -> list[MortalEvent]:
         return_actions: list[MortalEvent] = []
 
         for event in events:
@@ -19,6 +19,9 @@ class MortalBot:
             if return_action_str is not None:
                 return_action: MortalEvent = json.loads(return_action_str)
                 return_actions.append(return_action)
+            else:
+                if with_nulls:
+                    return_actions.append({"type": "none"})
 
         if len(return_actions) == 0:
             return_actions.append({"type": "none"})
@@ -30,6 +33,6 @@ class MortalBot:
 
         return return_actions
 
-    def react_one(self, events: list[MortalEvent], with_meta: bool = True) -> MortalEvent:
-        return_actions = self.react_all(events=events, with_meta=with_meta)
+    def react_one(self, events: list[MortalEvent], with_meta: bool = True, with_nulls: bool = False) -> MortalEvent:
+        return_actions = self.react_all(events=events, with_meta=with_meta, with_nulls=with_nulls)
         return return_actions[-1]
