@@ -77,6 +77,7 @@ class SingleRoundEmulator:
         if len(self.players) == 0:
             self.init_players()
 
+        turn = 0
         while True:
             actions = []
             wall_ended = False
@@ -103,8 +104,8 @@ class SingleRoundEmulator:
             if len(win_actions) > 0:
                 for action in win_actions:
                     player_id = int(action["actor"])
-                    logging.info("Round ended, player %d (%s) declared win: %s",
-                                 player_id, self.get_seat(player_id), action)
+                    logging.info("Round ended on turn %.2f, player %d (%s) declared win: %s",
+                                 turn / 4.0, player_id, self.get_seat(player_id), action)
                 break
 
             valid_actions_count = 0
@@ -138,6 +139,7 @@ class SingleRoundEmulator:
                     logging.debug("Player %d (%s) drew kan replacement tile %s",
                                   kan_player_id, self.get_seat(kan_player_id), tile)
                     self.events.append(mortal_helpers.draw_tile(player_id=kan_player_id, tile=tile))
+                    turn += 1
                     if kan_type == "ankan":
                         dora_marker = self.wall.get_dora_markers()[-1]
                         logging.debug("New dora marker: %s", dora_marker)
@@ -167,6 +169,7 @@ class SingleRoundEmulator:
                     logging.debug("Player %d (%s) drew tile %s",
                                   current_player_id, self.get_seat(current_player_id), tile)
                     self.events.append(mortal_helpers.draw_tile(player_id=current_player_id, tile=tile))
+                    turn += 1
                 continue
 
             redeal_actions = []
