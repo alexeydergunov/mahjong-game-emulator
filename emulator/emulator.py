@@ -10,7 +10,7 @@ from mortal.mortal_helpers import MortalEvent
 
 class SingleRoundEmulator:
     def __init__(self, round_wind: str, round_id: int, honba: int, riichi_sticks: int,
-                 dealer_id: int, scores: list[int], wall: Wall):
+                 dealer_id: int, scores: list[int], wall: Wall, player_pth_files: list[str]):
         assert round_wind in {"E", "S", "W"}
         assert 1 <= round_id <= 4
         assert honba >= 0
@@ -24,15 +24,17 @@ class SingleRoundEmulator:
         self.dealer_id = dealer_id
         self.scores = scores
 
+        assert len(player_pth_files) == 4
+        self.player_pth_files = player_pth_files
         self.players: list[MortalBot] = []
         self.wall = wall
         self.events: list[MortalEvent] = []
         self.player_events: list[list[MortalEvent]] = [[], [], [], []]
 
     def init_players(self):
-        pth_file = os.path.join(os.path.dirname(__file__), "../mortal/mortal_lib/mortal.pth")
-        for i in range(4):
-            self.players.append(MortalBot(player_id=i, pth_file=pth_file))
+        for player_id, pth_file in enumerate(self.player_pth_files):
+            logging.info("Initializing player %d with file %s", player_id, os.path.basename(pth_file))
+            self.players.append(MortalBot(player_id=player_id, pth_file=pth_file))
 
     def get_public_events(self, player_id: int) -> list[MortalEvent]:
         # add missing events since last caching
