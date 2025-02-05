@@ -33,7 +33,7 @@ class SingleRoundEmulator:
 
     def init_players(self):
         for player_id, pth_file in enumerate(self.player_pth_files):
-            logging.info("Initializing player %d with file %s", player_id, os.path.basename(pth_file))
+            logging.debug("Initializing player %d with file %s", player_id, os.path.basename(pth_file))
             self.players.append(MortalBot(player_id=player_id, pth_file=pth_file))
 
     def get_public_events(self, player_id: int) -> list[MortalEvent]:
@@ -69,10 +69,10 @@ class SingleRoundEmulator:
             start_hands=start_hands
         ))
         logging.info("Round started")
-        logging.info("East: %s", start_hands[self.dealer_id])
-        logging.info("South: %s", start_hands[(self.dealer_id + 1) % 4])
-        logging.info("West: %s", start_hands[(self.dealer_id + 2) % 4])
-        logging.info("North: %s", start_hands[(self.dealer_id + 3) % 4])
+        logging.debug("East: %s", start_hands[self.dealer_id])
+        logging.debug("South: %s", start_hands[(self.dealer_id + 1) % 4])
+        logging.debug("West: %s", start_hands[(self.dealer_id + 2) % 4])
+        logging.debug("North: %s", start_hands[(self.dealer_id + 3) % 4])
 
         if len(self.players) == 0:
             self.init_players()
@@ -80,7 +80,8 @@ class SingleRoundEmulator:
         while True:
             actions = []
             for player_id in range(4):
-                action = self.players[player_id].react_one(self.get_public_events(player_id=player_id), with_meta=False, with_nulls=True)
+                action = self.players[player_id].react_one(self.get_public_events(player_id=player_id), with_meta=False,
+                                                           with_nulls=True)
                 actions.append(action)
 
             win_actions = []
@@ -91,8 +92,7 @@ class SingleRoundEmulator:
             if len(win_actions) > 0:
                 for action in win_actions:
                     player_id = int(action["actor"])
-                    logging.info("Player %d (%s) declared win: %s", player_id, self.get_seat(player_id), action)
-                logging.info("Round ended by win")
+                    logging.info("Round ended, player %d (%s) declared win: %s", player_id, self.get_seat(player_id), action)
                 break
 
             valid_actions_count = 0
@@ -123,17 +123,17 @@ class SingleRoundEmulator:
                 if kan_player_id is not None:
                     assert self.wall.can_declare_kan(player_id=kan_player_id)
                     tile = self.wall.draw_kan_tile(player_id=kan_player_id)
-                    logging.info("Player %d (%s) drew kan replacement tile %s",
-                                 kan_player_id, self.get_seat(kan_player_id), tile)
+                    logging.debug("Player %d (%s) drew kan replacement tile %s",
+                                  kan_player_id, self.get_seat(kan_player_id), tile)
                     self.events.append(mortal_helpers.draw_tile(player_id=kan_player_id, tile=tile))
                     if kan_type == "ankan":
                         dora_marker = self.wall.get_dora_markers()[-1]
-                        logging.info("New dora marker: %s", dora_marker)
+                        logging.debug("New dora marker: %s", dora_marker)
                         self.events.append(mortal_helpers.add_dora_marker(tile=dora_marker))
                 else:
                     if riichi_player_id is not None:
-                        logging.info("Successful riichi by player %d (%s)",
-                                     riichi_player_id, self.get_seat(riichi_player_id))
+                        logging.debug("Successful riichi by player %d (%s)",
+                                      riichi_player_id, self.get_seat(riichi_player_id))
                         current_player_id = (riichi_player_id + 1) % 4
                     elif last_discard_player_id is not None:
                         current_player_id = (last_discard_player_id + 1) % 4
@@ -152,8 +152,8 @@ class SingleRoundEmulator:
                         self.events.append(mortal_helpers.successful_riichi(player_id=riichi_player_id))
 
                     tile = self.wall.draw_tile(player_id=current_player_id)
-                    logging.info("Player %d (%s) drew tile %s",
-                                 current_player_id, self.get_seat(current_player_id), tile)
+                    logging.debug("Player %d (%s) drew tile %s",
+                                  current_player_id, self.get_seat(current_player_id), tile)
                     self.events.append(mortal_helpers.draw_tile(player_id=current_player_id, tile=tile))
                 continue
 
@@ -173,8 +173,8 @@ class SingleRoundEmulator:
             assert len(kan_and_pon_actions) <= 1
             if len(kan_and_pon_actions) == 1:
                 player_id = int(kan_and_pon_actions[0]["actor"])
-                logging.info("Called %s by player %d (%s)", kan_and_pon_actions[0]["type"],
-                             player_id, self.get_seat(player_id))
+                logging.debug("Called %s by player %d (%s)", kan_and_pon_actions[0]["type"],
+                              player_id, self.get_seat(player_id))
                 self.events.append(kan_and_pon_actions[0])
                 continue
 
@@ -185,8 +185,8 @@ class SingleRoundEmulator:
             assert len(chi_actions) <= 1
             if len(chi_actions) == 1:
                 player_id = int(chi_actions[0]["actor"])
-                logging.info("Called chi by player %d (%s)",
-                             player_id, self.get_seat(player_id))
+                logging.debug("Called chi by player %d (%s)",
+                              player_id, self.get_seat(player_id))
                 self.events.append(chi_actions[0])
                 continue
 
@@ -197,8 +197,8 @@ class SingleRoundEmulator:
             assert len(discard_actions) <= 1
             if len(discard_actions) == 1:
                 player_id = int(discard_actions[0]["actor"])
-                logging.info("Discarded tile %s by player %d (%s)", discard_actions[0]["pai"],
-                             player_id, self.get_seat(player_id))
+                logging.debug("Discarded tile %s by player %d (%s)", discard_actions[0]["pai"],
+                              player_id, self.get_seat(player_id))
                 self.events.append(discard_actions[0])
                 if len(self.events) > 3 and self.events[-3]["type"] in {"daiminkan", "kakan"}:
                     assert self.events[-3]["actor"] == player_id
@@ -216,8 +216,8 @@ class SingleRoundEmulator:
             assert len(riichi_actions) <= 1
             if len(riichi_actions) == 1:
                 player_id = int(riichi_actions[0]["actor"])
-                logging.info("Declared riichi by player %d (%s)",
-                             player_id, self.get_seat(player_id))
+                logging.debug("Declared riichi by player %d (%s)",
+                              player_id, self.get_seat(player_id))
                 self.events.append(riichi_actions[0])
                 continue
 
