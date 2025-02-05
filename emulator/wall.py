@@ -21,6 +21,9 @@ def get_all_tiles(seed: Any) -> list[str]:
 
 
 class Wall:
+    def get_wall_info(self) -> str:
+        raise NotImplemented()
+
     def deal_start_hands(self) -> list[list[str]]:
         raise NotImplemented()
 
@@ -49,6 +52,19 @@ class StandardWall(Wall):
 
         self.kan_count: int = 0
         self.pointer: int = 0
+
+    def get_wall_info(self) -> str:
+        result = ""
+        for tile in self.wall:
+            if tile[0].isdigit():
+                if tile.endswith("r"):
+                    result += "0" + tile[1]
+                else:
+                    result += tile
+            else:
+                index = "ESWNPFC".index(tile)
+                result += str(index) + "z"
+        return result
 
     def deal_start_hands(self) -> list[list[str]]:
         result: list[list[str]] = []
@@ -114,6 +130,21 @@ class DuplicateWall(Wall):
             self.dead_wall.append(all_tiles.pop())
 
         assert len(all_tiles) == 0
+
+    def get_wall_info(self) -> str:
+        result = "\n"
+        result += "East start hand: " + str(sorted(self.start_hands[0])) + "\n"
+        result += "South start hand: " + str(sorted(self.start_hands[1])) + "\n"
+        result += "West start hand: " + str(sorted(self.start_hands[2])) + "\n"
+        result += "North start hand: " + str(sorted(self.start_hands[3])) + "\n"
+        result += "East wall: " + str(self.walls[0]) + "\n"
+        result += "South wall: " + str(self.walls[1]) + "\n"
+        result += "West wall: " + str(self.walls[2]) + "\n"
+        result += "North wall: " + str(self.walls[3]) + "\n"
+        result += "Dora indicators: " + str(self.dead_wall[-3::-2]) + "\n"
+        result += "Kan dora indicators: " + str(self.dead_wall[-4::-2]) + "\n"
+        result += "Not used tiles:" + str(self.dead_wall[11:9:-1]) + "\n"
+        return result
 
     def deal_start_hands(self) -> list[list[str]]:
         return self.start_hands

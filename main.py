@@ -25,8 +25,10 @@ def main():
     logging.info("Seed: %s", seed)
 
     for i, p in enumerate(itertools.permutations(range(4))):
+        wall = DuplicateWall(seed=seed)
+        if i == 0:
+            logging.info("Wall: %s", wall.get_wall_info())
         logging.info("Testing model permutation %d / 24", i + 1)
-        wall = StandardWall(seed=seed)
         emulator = SingleRoundEmulator(
             round_wind="E",
             round_id=1,
