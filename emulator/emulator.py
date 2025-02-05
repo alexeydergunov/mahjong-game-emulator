@@ -181,7 +181,10 @@ class SingleRoundEmulator:
                         break
 
                 if kan_player_id is not None:
-                    assert self.wall.can_declare_kan(player_id=kan_player_id)
+                    if not self.wall.can_declare_kan(player_id=kan_player_id):
+                        logging.info("Round (possibly) ended with a draw on turn %.2f, "
+                                     "duplicate wall of a player has ended, but Mortal wants kan", turn / 4.0)
+                        break
                     tile = self.wall.draw_kan_tile(player_id=kan_player_id)
                     logging.debug("Player %d (%s) drew kan replacement tile %s",
                                   kan_player_id, self.get_seat(kan_player_id), tile)
