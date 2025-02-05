@@ -92,8 +92,8 @@ class SingleRoundEmulator:
                         wall_ended = True
 
             if wall_ended:
-                logging.info("Round (possibly) ended with a draw, the wall supported by Mortal has ended, "
-                             "but probably duplicate wall has some more tiles")
+                logging.info("Round (possibly) ended with a draw on turn %.2f, the wall supported by Mortal has ended, "
+                             "but probably duplicate wall has some more tiles", turn / 4.0)
                 break
 
             win_actions = []
@@ -138,12 +138,12 @@ class SingleRoundEmulator:
                     tile = self.wall.draw_kan_tile(player_id=kan_player_id)
                     logging.debug("Player %d (%s) drew kan replacement tile %s",
                                   kan_player_id, self.get_seat(kan_player_id), tile)
-                    self.events.append(mortal_helpers.draw_tile(player_id=kan_player_id, tile=tile))
-                    turn += 1
                     if kan_type == "ankan":
                         dora_marker = self.wall.get_dora_markers()[-1]
                         logging.debug("New dora marker: %s", dora_marker)
                         self.events.append(mortal_helpers.add_dora_marker(tile=dora_marker))
+                    self.events.append(mortal_helpers.draw_tile(player_id=kan_player_id, tile=tile))
+                    turn += 1
                 else:
                     if riichi_player_id is not None:
                         logging.debug("Successful riichi by player %d (%s)",
@@ -155,8 +155,8 @@ class SingleRoundEmulator:
                         current_player_id = self.dealer_id  # first turn only
 
                     if not self.wall.can_draw_tile(player_id=current_player_id):
-                        logging.info("Round ended by draw: player %d (%s) can't draw tile",
-                                     current_player_id, self.get_seat(current_player_id))
+                        logging.info("Round ended by draw on turn %.2f: player %d (%s) can't draw tile",
+                                     turn / 4.0, current_player_id, self.get_seat(current_player_id))
                         break
 
                     if len(self.events) >= 2 and self.events[-2]["type"] == "reach":
