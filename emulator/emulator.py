@@ -6,6 +6,7 @@ import mortal.mortal_helpers as mortal_helpers
 from emulator.wall import Wall
 from mortal.mortal_bot import MortalBot
 from mortal.mortal_helpers import MortalEvent
+from mortal.mortal_helpers import TILES
 
 
 class SingleRoundEmulator:
@@ -30,6 +31,10 @@ class SingleRoundEmulator:
         self.wall = wall
         self.events: list[MortalEvent] = []
         self.player_events: list[list[MortalEvent]] = [[], [], [], []]
+
+        self.player_closed_hands: list[list[str]] = [[], [], [], []]
+        self.player_open_sets: list[list[list[str]]] = [[], [], [], []]
+        self.player_closed_kans: list[list[list[str]]] = [[], [], [], []]
 
     def init_players(self):
         for player_id, pth_file in enumerate(self.player_pth_files):
@@ -68,17 +73,27 @@ class SingleRoundEmulator:
             scores=self.scores,
             start_hands=start_hands
         ))
-        logging.info("Round started")
-        logging.debug("East: %s", start_hands[self.dealer_id])
-        logging.debug("South: %s", start_hands[(self.dealer_id + 1) % 4])
-        logging.debug("West: %s", start_hands[(self.dealer_id + 2) % 4])
-        logging.debug("North: %s", start_hands[(self.dealer_id + 3) % 4])
-
+        for player_id in range(4):
+            self.player_closed_hands[player_id].extend(start_hands[player_id])
+        logging.info("Round started, dora marker %s", dora_marker)
+        logging.debug("East: %s", sorted(start_hands[self.dealer_id], key=lambda x: TILES.index(x)))
+        logging.debug("South: %s", sorted(start_hands[(self.dealer_id + 1) % 4], key=lambda x: TILES.index(x)))
+        logging.debug("West: %s", sorted(start_hands[(self.dealer_id + 2) % 4], key=lambda x: TILES.index(x)))
+        logging.debug("North: %s", sorted(start_hands[(self.dealer_id + 3) % 4], key=lambda x: TILES.index(x)))
         if len(self.players) == 0:
             self.init_players()
 
         turn = 0
         while True:
+            logging.debug("Current hands:")
+            for player_id in range(4):
+                logging.debug("Hand of player %d (%s): closed hands %s, open sets %s, closed kans %s",
+                              player_id, self.get_seat(player_id),
+                              sorted(self.player_closed_hands[player_id], key=lambda x: TILES.index(x)),
+                              self.player_open_sets[player_id],
+                              self.player_closed_kans[player_id],
+                              )
+
             actions = []
             wall_ended = False
             for player_id in range(4):
@@ -143,6 +158,7 @@ class SingleRoundEmulator:
                         logging.debug("New dora marker: %s", dora_marker)
                         self.events.append(mortal_helpers.add_dora_marker(tile=dora_marker))
                     self.events.append(mortal_helpers.draw_tile(player_id=kan_player_id, tile=tile))
+                    self.player_closed_hands[kan_player_id].append(tile)
                     turn += 1
                 else:
                     if riichi_player_id is not None:
@@ -169,6 +185,7 @@ class SingleRoundEmulator:
                     logging.debug("Player %d (%s) drew tile %s",
                                   current_player_id, self.get_seat(current_player_id), tile)
                     self.events.append(mortal_helpers.draw_tile(player_id=current_player_id, tile=tile))
+                    self.player_closed_hands[current_player_id].append(tile)
                     turn += 1
                 continue
 
@@ -187,10 +204,36 @@ class SingleRoundEmulator:
                     kan_and_pon_actions.append(action)
             assert len(kan_and_pon_actions) <= 1
             if len(kan_and_pon_actions) == 1:
-                player_id = int(kan_and_pon_actions[0]["actor"])
-                logging.debug("Called %s by player %d (%s)", kan_and_pon_actions[0]["type"],
+                call_action = kan_and_pon_actions[0]
+                player_id = int(call_action["actor"])
+                logging.debug("Called %s by player %d (%s)", call_action["type"],
                               player_id, self.get_seat(player_id))
-                self.events.append(kan_and_pon_actions[0])
+                self.events.append(call_action)
+                if call_action["type"] == "pon":
+                    # noinspection PyTypeChecker
+                    kan_tiles: list[str] = call_action["consumed"]
+                    for tile in kan_tiles:
+                        self.player_closed_hands[player_id].remove(tile)
+                    self.player_open_sets[player_id].append([call_action["pai"]] + kan_tiles)
+                elif call_action["type"] == "daiminkan":
+                    # noinspection PyTypeChecker
+                    kan_tiles: list[str] = call_action["consumed"]
+                    for tile in kan_tiles:
+                        self.player_closed_hands[player_id].remove(tile)
+                    self.player_open_sets[player_id].append([call_action["pai"]] + kan_tiles)
+                elif call_action["type"] == "ankan":
+                    # noinspection PyTypeChecker
+                    kan_tiles: list[str] = call_action["consumed"]
+                    for tile in kan_tiles:
+                        self.player_closed_hands[player_id].remove(tile)
+                    self.player_closed_kans[player_id].append(kan_tiles)
+                elif call_action["type"] == "kakan":
+                    # noinspection PyTypeChecker
+                    kan_tiles: list[str] = call_action["consumed"]
+                    self.player_closed_hands[player_id].remove(call_action["pai"])
+                    for i in range(len(self.player_open_sets[player_id])):
+                        if sorted(self.player_open_sets[player_id][i]) == sorted(kan_tiles):
+                            self.player_open_sets[player_id][i].insert(0, call_action["pai"])
                 continue
 
             chi_actions = []
@@ -203,6 +246,11 @@ class SingleRoundEmulator:
                 logging.debug("Called chi by player %d (%s)",
                               player_id, self.get_seat(player_id))
                 self.events.append(chi_actions[0])
+                # noinspection PyTypeChecker
+                chi_tiles: list[str] = chi_actions[0]["consumed"]
+                for tile in chi_tiles:
+                    self.player_closed_hands[player_id].remove(tile)
+                self.player_open_sets[player_id].append([chi_actions[0]["pai"]] + chi_tiles)
                 continue
 
             discard_actions = []
@@ -215,6 +263,7 @@ class SingleRoundEmulator:
                 logging.debug("Discarded tile %s by player %d (%s)", discard_actions[0]["pai"],
                               player_id, self.get_seat(player_id))
                 self.events.append(discard_actions[0])
+                self.player_closed_hands[player_id].remove(discard_actions[0]["pai"])
                 if len(self.events) > 3 and self.events[-3]["type"] in {"daiminkan", "kakan"}:
                     assert self.events[-3]["actor"] == player_id
                     assert self.events[-2]["type"] == "tsumo"
