@@ -1,3 +1,4 @@
+import itertools
 import logging
 import os
 
@@ -16,19 +17,27 @@ def main():
         os.path.join(pth_files_dir, "bot_20240308_best_0a88_6563.pth"),
         os.path.join(pth_files_dir, "bot_20240308_mortal_baad_d6a2.pth"),
     ]
+    logging.info("Pth files:")
+    for pth_file in pth_files:
+        logging.info("%s", pth_file)
 
-    wall = StandardWall(seed=329)
-    emulator = SingleRoundEmulator(
-        round_wind="E",
-        round_id=1,
-        honba=0,
-        riichi_sticks=0,
-        dealer_id=0,
-        scores=[25000] * 4,
-        wall=wall,
-        player_pth_files=pth_files,
-    )
-    emulator.process()
+    seed = 329
+    logging.info("Seed: %s", seed)
+
+    for i, p in enumerate(itertools.permutations(range(4))):
+        logging.info("Testing model permutation %d / 24", i + 1)
+        wall = StandardWall(seed=seed)
+        emulator = SingleRoundEmulator(
+            round_wind="E",
+            round_id=1,
+            honba=0,
+            riichi_sticks=0,
+            dealer_id=0,
+            scores=[25000] * 4,
+            wall=wall,
+            player_pth_files=[pth_files[p[0]], pth_files[p[1]], pth_files[p[2]], pth_files[p[3]]],
+        )
+        emulator.process()
 
 
 if __name__ == "__main__":
