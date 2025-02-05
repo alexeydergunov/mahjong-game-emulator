@@ -3,6 +3,7 @@ import logging
 import os
 
 import mortal.mortal_helpers as mortal_helpers
+from emulator import win_calc
 from emulator.wall import Wall
 from mortal.mortal_bot import MortalBot
 from mortal.mortal_helpers import MortalEvent
@@ -35,6 +36,7 @@ class SingleRoundEmulator:
         self.player_closed_hands: list[list[str]] = [[], [], [], []]
         self.player_open_sets: list[list[list[str]]] = [[], [], [], []]
         self.player_closed_kans: list[list[list[str]]] = [[], [], [], []]
+        self.successful_riichi_players: set[int] = set()
 
     def init_players(self):
         for player_id, pth_file in enumerate(self.player_pth_files):
@@ -59,6 +61,16 @@ class SingleRoundEmulator:
 
     def get_seat(self, player_id: int) -> str:
         return "ESWN"[(self.dealer_id + player_id) % 4]
+
+    def get_win_tile(self, is_tsumo: bool) -> str:
+        for event in reversed(self.events):
+            if is_tsumo:
+                if event["type"] == "tsumo":
+                    return event["pai"]
+            else:
+                if event["type"] in {"dahai", "kakan"}:
+                    return event["pai"]
+        raise Exception("Can't find win tile")
 
     def process(self):
         start_hands = self.wall.deal_start_hands()
@@ -119,8 +131,28 @@ class SingleRoundEmulator:
             if len(win_actions) > 0:
                 for action in win_actions:
                     player_id = int(action["actor"])
-                    logging.info("Round ended on turn %.2f, player %d (%s) declared win: %s",
-                                 turn / 4.0, player_id, self.get_seat(player_id), action)
+                    target = int(action["target"])
+                    is_tsumo: bool = player_id == target
+                    is_riichi: bool = player_id in self.successful_riichi_players
+                    dora_markers = self.wall.get_dora_markers()
+                    ura_dora_markers = self.wall.get_ura_dora_markers() if is_riichi else []
+                    han, fu, cost = win_calc.calculate_win(
+                        closed_hand=sorted(self.player_closed_hands[player_id], key=lambda x: TILES.index(x)),
+                        open_sets=self.player_open_sets[player_id],
+                        closed_kans=self.player_closed_kans[player_id],
+                        win_tile=self.get_win_tile(is_tsumo=is_tsumo),
+                        dora_markers=dora_markers,
+                        ura_dora_markers=ura_dora_markers,
+                        player_wind="ESWN"[(player_id - self.dealer_id + 4) % 4],
+                        round_wind=self.round_wind,
+                        is_riichi=is_riichi,
+                        is_tsumo=is_tsumo,
+                        riichi_sticks=self.riichi_sticks + len(self.successful_riichi_players - {player_id}),
+                        honba=self.honba,
+                    )
+                    logging.info("Round ended on turn %.2f, player %d (%s) "
+                                 "declared win on %d points (%d han, %d fu): %s",
+                                 turn / 4.0, player_id, self.get_seat(player_id), cost, han, fu, action)
                 break
 
             valid_actions_count = 0
@@ -180,6 +212,7 @@ class SingleRoundEmulator:
                         assert self.events[-1]["type"] == "dahai"
                         assert self.events[-1]["actor"] == riichi_player_id
                         self.events.append(mortal_helpers.successful_riichi(player_id=riichi_player_id))
+                        self.successful_riichi_players.add(riichi_player_id)
 
                     tile = self.wall.draw_tile(player_id=current_player_id)
                     logging.debug("Player %d (%s) drew tile %s",
