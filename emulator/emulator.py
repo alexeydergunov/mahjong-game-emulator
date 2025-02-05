@@ -79,10 +79,21 @@ class SingleRoundEmulator:
 
         while True:
             actions = []
+            wall_ended = False
             for player_id in range(4):
-                action = self.players[player_id].react_one(self.get_public_events(player_id=player_id), with_meta=False,
-                                                           with_nulls=True)
-                actions.append(action)
+                try:
+                    action = self.players[player_id].react_one(self.get_public_events(player_id=player_id),
+                                                               with_meta=False,
+                                                               with_nulls=True)
+                    actions.append(action)
+                except RuntimeError as e:
+                    if "rule violation: attempt to tsumo from exhausted yama" in str(e):
+                        wall_ended = True
+
+            if wall_ended:
+                logging.info("Round (possibly) ended with a draw, the wall supported by Mortal has ended, "
+                             "but probably duplicate wall has some more tiles")
+                break
 
             win_actions = []
             for action in actions:
@@ -92,7 +103,8 @@ class SingleRoundEmulator:
             if len(win_actions) > 0:
                 for action in win_actions:
                     player_id = int(action["actor"])
-                    logging.info("Round ended, player %d (%s) declared win: %s", player_id, self.get_seat(player_id), action)
+                    logging.info("Round ended, player %d (%s) declared win: %s",
+                                 player_id, self.get_seat(player_id), action)
                 break
 
             valid_actions_count = 0

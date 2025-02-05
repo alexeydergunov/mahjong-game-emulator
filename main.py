@@ -21,7 +21,7 @@ def main():
     for pth_file in pth_files:
         logging.info("%s", pth_file)
 
-    seed = 329
+    seed = 330
     logging.info("Seed: %s", seed)
 
     for i, p in enumerate(itertools.permutations(range(4))):
