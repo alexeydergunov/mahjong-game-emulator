@@ -1,10 +1,11 @@
 import itertools
 import logging
 import os
+from random import SystemRandom, Random
 
 from emulator.emulator import SingleRoundEmulator
 # noinspection PyUnresolvedReferences
-from emulator.wall import StandardWall, DuplicateWall
+from emulator.wall import StandardWall, DuplicateWall, get_all_tiles
 
 
 def main():
@@ -21,11 +22,18 @@ def main():
     for pth_file in pth_files:
         logging.info("%s", pth_file)
 
-    seed = 330
+    seed = None
     logging.info("Seed: %s", seed)
+    if seed is None:
+        r = SystemRandom()
+    else:
+        r = Random(seed)
+    shuffled_tiles = get_all_tiles()
+    r.shuffle(shuffled_tiles)
+    logging.info("Shuffled tiles: %s", shuffled_tiles)
 
     for i, p in enumerate(itertools.permutations(range(4))):
-        wall = DuplicateWall(seed=seed)
+        wall = DuplicateWall(shuffled_tiles=shuffled_tiles)
         if i == 0:
             logging.info("Wall: %s", wall.get_wall_info())
         logging.info("Testing model permutation %d / 24", i + 1)
