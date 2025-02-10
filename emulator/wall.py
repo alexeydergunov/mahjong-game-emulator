@@ -137,7 +137,7 @@ class DuplicateWall(Wall):
         result += "West wall: " + str(self.walls[2]) + "\n"
         result += "North wall: " + str(self.walls[3]) + "\n"
         result += "Dora indicators: " + str(self.dead_wall[-3::-2]) + "\n"
-        result += "Kan dora indicators: " + str(self.dead_wall[-4::-2]) + "\n"
+        result += "Ura dora indicators: " + str(self.dead_wall[-4::-2]) + "\n"
         result += "Not used tiles:" + str(self.dead_wall[11:9:-1]) + "\n"
         return result
 
