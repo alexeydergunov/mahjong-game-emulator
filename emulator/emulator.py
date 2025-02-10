@@ -151,8 +151,8 @@ class SingleRoundEmulator:
                         honba=self.honba,
                     )
                     logging.info("Round ended on turn %.2f, player %d (%s) "
-                                 "declared win on %d points (%d han, %d fu): %s",
-                                 turn / 4.0, player_id, self.get_seat(player_id), cost, han, fu, action)
+                                 "declared win with %d han, %d fu: %s",
+                                 turn / 4.0, player_id, self.get_seat(player_id), han, fu, action)
                 break
 
             valid_actions_count = 0

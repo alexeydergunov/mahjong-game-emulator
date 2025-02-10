@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Optional
 
 from mahjong.constants import EAST, SOUTH, WEST, NORTH
 from mahjong.hand_calculating.hand import HandCalculator
@@ -22,7 +23,7 @@ def calculate_win(closed_hand: list[str],
                   is_tsumo: bool,
                   riichi_sticks: int,
                   honba: int,
-                  ) -> tuple[int, int, int]:
+                  ) -> tuple[int, int, Optional[int]]:
     hand_config = HandConfig(
         is_riichi=is_riichi,
         player_wind=[EAST, SOUTH, WEST, NORTH]["ESWN".index(player_wind)],
@@ -86,4 +87,4 @@ def calculate_win(closed_hand: list[str],
         dora_indicators=dora_markers_136,
         config=hand_config,
     )
-    return hand_response.han, hand_response.fu, hand_response.cost["total"]
+    return hand_response.han, hand_response.fu, (hand_response.cost or {}).get("total")
