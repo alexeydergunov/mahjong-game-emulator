@@ -3,4 +3,6 @@ torch==2.3.0
 
 mahjong==1.2.1
 
+pillow==11.1.0
+
 pytest==8.3.4

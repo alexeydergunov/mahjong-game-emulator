@@ -109,6 +109,7 @@ class DuplicateWall(Wall):
         self.pointers: list[int] = [0] * 4
         self.kan_count: int = 0
 
+        self.shuffled_tiles = shuffled_tiles.copy()
         all_tiles = list(reversed(shuffled_tiles))
 
         for player_id in range(4):

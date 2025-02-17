@@ -3,6 +3,7 @@ import logging
 import os
 from random import SystemRandom, Random
 
+from drawing import drawing
 from emulator.emulator import SingleRoundEmulator
 # noinspection PyUnresolvedReferences
 from emulator.wall import StandardWall, DuplicateWall, get_all_tiles
@@ -36,6 +37,8 @@ def main():
         wall = DuplicateWall(shuffled_tiles=shuffled_tiles)
         if i == 0:
             logging.info("Wall: %s", wall.get_wall_info())
+            if isinstance(wall, DuplicateWall):
+                drawing.draw_duplicate_wall(wall=wall)
         logging.info("Testing model permutation %d / 24", i + 1)
         emulator = SingleRoundEmulator(
             round_wind="E",
