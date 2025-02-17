@@ -29,7 +29,7 @@ def create_tile_image(tile: str, angle: int = 0) -> Image.Image:
 
 
 def draw_duplicate_wall(wall: DuplicateWall):
-    pictures_dir = "_pictures"
+    pictures_dir = "wall_pictures"
     if not os.path.exists(pictures_dir):
         os.mkdir(pictures_dir)
     file_path = get_file_path(pictures_dir=pictures_dir, wall=wall)
