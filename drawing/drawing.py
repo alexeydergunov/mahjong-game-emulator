@@ -59,8 +59,8 @@ def draw_duplicate_wall(wall: DuplicateWall):
 
     # West hand
     for i, tile in enumerate(sorted(wall.start_hands[2], key=lambda t: TILES.index(t))):
-        tile_img = create_tile_image(tile=tile)
-        x = int(pic_width / 2 - 6.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
+        tile_img = create_tile_image(tile=tile, angle=180)
+        x = int(pic_width / 2 + 6.5 * (tile_width + blank_space) - (i + 1) * (tile_width + blank_space))
         y = blank_space
         img.paste(tile_img, (x, y))
 
@@ -97,12 +97,12 @@ def draw_duplicate_wall(wall: DuplicateWall):
 
     # West wall
     for i, tile in enumerate(wall.walls[2][::2]):
-        tile_img = create_tile_image(tile=tile)
+        tile_img = create_tile_image(tile=tile, angle=180)
         x = int(pic_width / 2 - 4.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         y = int(2.5 * tile_height + blank_space)
         img.paste(tile_img, (x, y))
     for i, tile in enumerate(wall.walls[2][1::2]):
-        tile_img = create_tile_image(tile=tile)
+        tile_img = create_tile_image(tile=tile, angle=180)
         x = int(pic_width / 2 - 4.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         y = int(1.5 * tile_height)
         img.paste(tile_img, (x, y))
