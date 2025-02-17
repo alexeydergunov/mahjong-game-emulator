@@ -131,5 +131,8 @@ def draw_duplicate_wall(wall: DuplicateWall):
         x = int(pic_width / 2 - 3.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         img.paste(tile_img, (x, y))
 
-    img.save(file_path)
-    logging.info("Duplicate wall picture saved to file %s", file_path)
+    if os.path.exists(file_path):
+        logging.info("File %s already exists!", file_path)
+    else:
+        img.save(file_path)
+        logging.info("Duplicate wall picture saved to file %s", file_path)
