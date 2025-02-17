@@ -47,7 +47,12 @@ def calculate_win(closed_hand: list[str],
         tiles_136.append(tile_map[tile].pop())
     if is_tsumo:
         assert len(tiles_136) % 3 == 2
-        win_tile_136 = tiles_136[-1]
+        win_tile_136 = None
+        for tile_136 in tiles_136:
+            if mortal_helpers.convert_tile_to_mortal(tile_136=tile_136) == win_tile:
+                win_tile_136 = tile_136
+                break
+        assert win_tile_136 is not None
     else:
         assert len(tiles_136) % 3 == 1
         win_tile_136 = tile_map[win_tile].pop()
