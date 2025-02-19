@@ -122,12 +122,12 @@ def draw_duplicate_wall(wall: DuplicateWall):
     # Dead wall
     for i, tile in enumerate(wall.dead_wall[-3::-2]):
         tile_img = create_tile_image(tile=tile)
-        y = int(pic_height / 2 - 0.5 * (tile_height + blank_space))
+        y = int(pic_height / 2 - (tile_height + blank_space))
         x = int(pic_width / 2 - 1.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         img.paste(tile_img, (x, y))
     for i, tile in enumerate(wall.dead_wall[11:9:-1] + wall.dead_wall[-4::-2]):
         tile_img = create_tile_image(tile=tile)
-        y = int(pic_height / 2 + 0.5 * (tile_height + blank_space))
+        y = int(pic_height / 2)
         x = int(pic_width / 2 - 3.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         img.paste(tile_img, (x, y))
 
