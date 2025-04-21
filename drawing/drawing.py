@@ -2,17 +2,21 @@ import hashlib
 import logging
 import os.path
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 from emulator.wall import DuplicateWall
 from mortal.mortal_helpers import TILES
 
 
-def get_file_path(pictures_dir: str, wall: DuplicateWall) -> str:
+def get_wall_hash(wall: DuplicateWall) -> str:
     h = hashlib.md5()
     for tile in wall.shuffled_tiles:
         h.update(tile.encode())
-    filename = "wall_" + h.hexdigest()
+    return h.hexdigest()
+
+
+def get_file_path(pictures_dir: str, wall: DuplicateWall) -> str:
+    filename = "wall_" + get_wall_hash(wall=wall)
     filename += "_" + wall.shuffled_tiles[0] + wall.shuffled_tiles[1]
     filename += "_" + wall.shuffled_tiles[-2] + wall.shuffled_tiles[-1]
     filename += ".png"
@@ -23,6 +27,24 @@ def create_tile_image(tile: str, angle: int = 0) -> Image.Image:
     img_frame = Image.open("tiles_png/200/frame.png")
     img_tile = Image.open(f"tiles_png/200/{tile}.png")
     result = Image.alpha_composite(img_tile, img_frame)
+    if angle != 0:
+        result = result.rotate(angle, expand=True)
+    return result
+
+
+def create_text_image(text: str, width: int, height: int, font_size: int, angle: int = 0):
+    result = Image.new("RGB", (width, height), "white")
+
+    # uncomment for debug
+    # ImageDraw.ImageDraw(result).rounded_rectangle(xy=(0, 0, width - 1, height - 1), radius=10, fill="black")
+    # ImageDraw.ImageDraw(result).rounded_rectangle(xy=(4, 4, width - 5, height - 5), radius=10, fill="white")
+
+    font = ImageFont.load_default(size=float(font_size))
+    bbox = ImageDraw.ImageDraw(result).textbbox(xy=(0, 0), text=text, font=font, stroke_width=2)
+    x = int(width / 2 - (bbox[2] - bbox[0]) / 2)
+    y = int(height / 2 - (bbox[3] - bbox[1]) / 2)
+    ImageDraw.ImageDraw(result).text(xy=(x, y), text=text, fill="black", font=font, stroke_width=2)
+
     if angle != 0:
         result = result.rotate(angle, expand=True)
     return result
@@ -82,6 +104,11 @@ def draw_duplicate_wall(wall: DuplicateWall):
         x = int(pic_width / 2 - 4.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         y = int(pic_height - 2.5 * tile_height)
         img.paste(tile_img, (x, y))
+    # "East" text
+    text_img = create_text_image(text="East", width=500, height=150, font_size=100)
+    x = int(pic_width / 2 - text_img.width / 2)
+    y = int(pic_height - 3.5 * tile_height - blank_space - 1.2 * text_img.height)
+    img.paste(text_img, (x, y))
 
     # South wall
     for i, tile in enumerate(wall.walls[1][16::-2]):
@@ -94,6 +121,11 @@ def draw_duplicate_wall(wall: DuplicateWall):
         y = int(pic_height / 2 + 4.5 * (tile_width + blank_space) - (i + 1) * (tile_width + blank_space))
         x = int(pic_width - 2.5 * tile_height)
         img.paste(tile_img, (x, y))
+    # "South" text
+    text_img = create_text_image(text="South", width=500, height=150, font_size=100, angle=90)
+    x = int(pic_width - 3.5 * tile_height - blank_space - 1.2 * text_img.width)
+    y = int(pic_height / 2 - text_img.height / 2)
+    img.paste(text_img, (x, y))
 
     # West wall
     for i, tile in enumerate(wall.walls[2][::2]):
@@ -106,6 +138,11 @@ def draw_duplicate_wall(wall: DuplicateWall):
         x = int(pic_width / 2 - 4.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         y = int(1.5 * tile_height)
         img.paste(tile_img, (x, y))
+    # "West" text
+    text_img = create_text_image(text="West", width=500, height=150, font_size=100, angle=180)
+    x = int(pic_width / 2 - text_img.width / 2)
+    y = int(3.5 * tile_height + blank_space + 0.2 * text_img.height)
+    img.paste(text_img, (x, y))
 
     # North wall
     for i, tile in enumerate(wall.walls[3][16::-2]):
@@ -118,18 +155,34 @@ def draw_duplicate_wall(wall: DuplicateWall):
         y = int(pic_height / 2 - 4.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         x = int(1.5 * tile_height)
         img.paste(tile_img, (x, y))
+    # "North" text
+    text_img = create_text_image(text="North", width=500, height=150, font_size=100, angle=-90)
+    x = int(3.5 * tile_height + blank_space + 0.2 * text_img.width)
+    y = int(pic_height / 2 - text_img.height / 2)
+    img.paste(text_img, (x, y))
 
     # Dead wall
     for i, tile in enumerate(wall.dead_wall[-3::-2]):
         tile_img = create_tile_image(tile=tile)
-        y = int(pic_height / 2 - (tile_height + blank_space))
+        y = int(pic_height / 2)
         x = int(pic_width / 2 - 1.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         img.paste(tile_img, (x, y))
     for i, tile in enumerate(wall.dead_wall[11:9:-1] + wall.dead_wall[-4::-2]):
         tile_img = create_tile_image(tile=tile)
-        y = int(pic_height / 2)
+        y = int(pic_height / 2 + (tile_height + blank_space))
         x = int(pic_width / 2 - 3.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         img.paste(tile_img, (x, y))
+    # "Dead wall" text
+    text_img = create_text_image(text="Dead wall", width=500, height=150, font_size=100)
+    x = int(pic_width / 2 - text_img.width / 2)
+    y = int(pic_height / 2 - 1.2 * text_img.height)
+    img.paste(text_img, (x, y))
+
+    # Wall hash
+    text_img = create_text_image(text="Hash: " + get_wall_hash(wall=wall), width=1700, height=150, font_size=80)
+    x = int(pic_width / 2 - text_img.width / 2)
+    y = int(pic_height / 2 - 3.2 * text_img.height)
+    img.paste(text_img, (x, y))
 
     if os.path.exists(file_path):
         logging.info("File %s already exists!", file_path)
