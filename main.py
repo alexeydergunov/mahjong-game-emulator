@@ -36,12 +36,17 @@ def main():
     logging.info("Shuffled tiles: %s", shuffled_tiles)
 
     result_counts: dict[tuple[str, Optional[str], Optional[str]], int] = defaultdict(int)
+    duplicate_wall_file_path = None
     for i, p in enumerate(itertools.permutations(range(4))):
         wall = DuplicateWall(shuffled_tiles=shuffled_tiles)
         if i == 0:
             logging.info("Wall: %s", wall.get_wall_info())
             if isinstance(wall, DuplicateWall):
-                drawing.draw_duplicate_wall(wall=wall, dead_wall_in_one_line=True, overwrite_file=True)
+                duplicate_wall_file_path = drawing.draw_duplicate_wall(
+                    wall=wall,
+                    dead_wall_in_one_line=True,
+                    overwrite_file=True,
+                )
         logging.info("Testing model permutation %d / 24", i + 1)
         emulator = SingleRoundEmulator(
             round_wind="E",
@@ -61,6 +66,10 @@ def main():
             for win_desc in emulation_result["wins"]:
                 result_counts[(win_desc["win_type"], win_desc["winner"], win_desc.get("loser"))] += 1
 
+    logging.info("")
+    logging.info("================================================================================")
+    if duplicate_wall_file_path is not None:
+        logging.info("Duplicate wall picture path: %s", duplicate_wall_file_path)
     logging.info("Round result counts:")
     for result, count in sorted(result_counts.items(), key=lambda t: (t[1], t[0]), reverse=True):
         logging.info("%s -> %d", result, count)

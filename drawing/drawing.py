@@ -234,3 +234,4 @@ def draw_duplicate_wall(wall: DuplicateWall, dead_wall_in_one_line: bool, overwr
         logging.info("Duplicate wall picture saved to file %s", file_path)
     else:
         logging.info("File %s already exists!", file_path)
+    return file_path
