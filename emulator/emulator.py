@@ -61,7 +61,7 @@ class SingleRoundEmulator:
         return events_to_react
 
     def get_seat(self, player_id: int) -> str:
-        return "ESWN"[(self.dealer_id + player_id) % 4]
+        return "ESWN"[(player_id - self.dealer_id + 4) % 4]
 
     def get_win_tile(self, is_tsumo: bool) -> str:
         for event in reversed(self.events):
@@ -145,7 +145,7 @@ class SingleRoundEmulator:
                         win_tile=self.get_win_tile(is_tsumo=is_tsumo),
                         dora_markers=dora_markers,
                         ura_dora_markers=ura_dora_markers,
-                        player_wind="ESWN"[(player_id - self.dealer_id + 4) % 4],
+                        player_wind=self.get_seat(player_id),
                         round_wind=self.round_wind,
                         is_riichi=is_riichi,
                         is_tsumo=is_tsumo,
