@@ -50,7 +50,7 @@ def create_text_image(text: str, width: int, height: int, font_size: int, angle:
     return result
 
 
-def draw_duplicate_wall(wall: DuplicateWall):
+def draw_duplicate_wall(wall: DuplicateWall, overwrite_file: bool):
     pictures_dir = "wall_pictures"
     if not os.path.exists(pictures_dir):
         os.mkdir(pictures_dir)
@@ -204,8 +204,8 @@ def draw_duplicate_wall(wall: DuplicateWall):
     y = int(pic_height / 2 - 4.2 * text_img.height)
     img.paste(text_img, (x, y))
 
-    if os.path.exists(file_path):
-        logging.info("File %s already exists!", file_path)
-    else:
+    if not os.path.exists(file_path) or overwrite_file:
         img.save(file_path)
         logging.info("Duplicate wall picture saved to file %s", file_path)
+    else:
+        logging.info("File %s already exists!", file_path)

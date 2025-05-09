@@ -38,7 +38,7 @@ def main():
         if i == 0:
             logging.info("Wall: %s", wall.get_wall_info())
             if isinstance(wall, DuplicateWall):
-                drawing.draw_duplicate_wall(wall=wall)
+                drawing.draw_duplicate_wall(wall=wall, overwrite_file=True)
         logging.info("Testing model permutation %d / 24", i + 1)
         emulator = SingleRoundEmulator(
             round_wind="E",
