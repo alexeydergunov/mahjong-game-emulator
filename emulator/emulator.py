@@ -1,6 +1,7 @@
 import copy
 import logging
 import os
+from typing import Any
 
 import mortal.mortal_helpers as mortal_helpers
 from emulator import win_calc
@@ -72,7 +73,7 @@ class SingleRoundEmulator:
                     return event["pai"]
         raise Exception("Can't find win tile")
 
-    def process(self):
+    def process(self) -> dict[str, Any]:
         start_hands = self.wall.deal_start_hands()
         dora_marker = self.wall.get_dora_markers()[-1]
         self.events.append(mortal_helpers.start_hand(
@@ -121,7 +122,7 @@ class SingleRoundEmulator:
             if wall_ended:
                 logging.info("Round (possibly) ended with a draw on turn %.2f, the wall supported by Mortal has ended, "
                              "but probably duplicate wall has some more tiles", turn / 4.0)
-                break
+                return {"result": "draw"}
 
             win_actions = []
             for action in actions:
@@ -129,6 +130,7 @@ class SingleRoundEmulator:
                     win_actions.append(action)
 
             if len(win_actions) > 0:
+                result = {"result": "win", "wins": []}
                 for action in win_actions:
                     player_id = int(action["actor"])
                     target = int(action["target"])
@@ -153,7 +155,16 @@ class SingleRoundEmulator:
                     logging.info("Round ended on turn %.2f, player %d (%s) "
                                  "declared win with %d han, %d fu: %s",
                                  turn / 4.0, player_id, self.get_seat(player_id), han, fu, action)
-                break
+                    win_desc = {
+                        "win_type": "tsumo" if is_tsumo else "ron",
+                        "winner": self.get_seat(player_id),
+                        "han": han,
+                        "fu": fu,
+                    }
+                    if not is_tsumo:
+                        win_desc["loser"] = self.get_seat(target)
+                    result["wins"].append(win_desc)
+                return result
 
             valid_actions_count = 0
             for player_id in range(4):
@@ -184,7 +195,7 @@ class SingleRoundEmulator:
                     if not self.wall.can_declare_kan(player_id=kan_player_id):
                         logging.info("Round (possibly) ended with a draw on turn %.2f, "
                                      "duplicate wall of a player has ended, but Mortal wants kan", turn / 4.0)
-                        break
+                        return {"result": "draw"}
                     tile = self.wall.draw_kan_tile(player_id=kan_player_id)
                     logging.debug("Player %d (%s) drew kan replacement tile %s",
                                   kan_player_id, self.get_seat(kan_player_id), tile)
@@ -208,7 +219,7 @@ class SingleRoundEmulator:
                     if not self.wall.can_draw_tile(player_id=current_player_id):
                         logging.info("Round ended by draw on turn %.2f: player %d (%s) can't draw tile",
                                      turn / 4.0, current_player_id, self.get_seat(current_player_id))
-                        break
+                        return {"result": "draw"}
 
                     if len(self.events) >= 2 and self.events[-2]["type"] == "reach":
                         riichi_player_id = self.events[-2]["actor"]
@@ -232,7 +243,7 @@ class SingleRoundEmulator:
             assert len(redeal_actions) <= 1
             if len(redeal_actions) == 1:
                 logging.info("Round ended with an abortive draw")
-                break
+                return {"result": "draw"}
 
             kan_and_pon_actions = []
             for action in actions:
@@ -322,3 +333,5 @@ class SingleRoundEmulator:
                 continue
 
             raise Exception("Can't find a valid action")
+
+        raise Exception("Process cycle didn't end correctly")
