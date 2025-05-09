@@ -88,7 +88,7 @@ class SingleRoundEmulator:
         ))
         for player_id in range(4):
             self.player_closed_hands[player_id].extend(start_hands[player_id])
-        logging.info("Round started, dora marker %s", dora_marker)
+        logging.debug("Round started, dora marker %s", dora_marker)
         logging.debug("East: %s", sorted(start_hands[self.dealer_id], key=lambda x: TILES.index(x)))
         logging.debug("South: %s", sorted(start_hands[(self.dealer_id + 1) % 4], key=lambda x: TILES.index(x)))
         logging.debug("West: %s", sorted(start_hands[(self.dealer_id + 2) % 4], key=lambda x: TILES.index(x)))
@@ -316,7 +316,7 @@ class SingleRoundEmulator:
                     assert self.events[-2]["type"] == "tsumo"
                     assert self.events[-2]["actor"] == player_id
                     dora_marker = self.wall.get_dora_markers()[-1]
-                    logging.info("New dora marker: %s", dora_marker)
+                    logging.debug("New dora marker: %s", dora_marker)
                     self.events.append(mortal_helpers.add_dora_marker(tile=dora_marker))
                 continue
 
