@@ -180,24 +180,28 @@ def draw_duplicate_wall(wall: DuplicateWall):
     # Dead wall
     for i, tile in enumerate(wall.dead_wall[-3::-2]):
         tile_img = create_tile_image(tile=tile)
+        caption_img = create_text_image(text="D0" + str(i + 2), width=200, height=100, font_size=70)
         y = int(pic_height / 2)
         x = int(pic_width / 2 - 1.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
+        img.paste(caption_img, (x, y - caption_img.height))
         img.paste(tile_img, (x, y))
     for i, tile in enumerate(wall.dead_wall[11:9:-1] + wall.dead_wall[-4::-2]):
         tile_img = create_tile_image(tile=tile)
+        caption_img = create_text_image(text="D1" + str(i), width=200, height=100, font_size=70)
         y = int(pic_height / 2 + (tile_height + blank_space))
         x = int(pic_width / 2 - 3.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
+        img.paste(caption_img, (x, y + tile_height - 30))
         img.paste(tile_img, (x, y))
     # "Dead wall" text
     text_img = create_text_image(text="Dead wall", width=500, height=150, font_size=100)
     x = int(pic_width / 2 - text_img.width / 2)
-    y = int(pic_height / 2 - 1.2 * text_img.height)
+    y = int(pic_height / 2 - 0.5 * tile_height - 1.2 * text_img.height)
     img.paste(text_img, (x, y))
 
     # Wall hash
     text_img = create_text_image(text="Hash: " + get_wall_hash(wall=wall), width=1700, height=150, font_size=80)
     x = int(pic_width / 2 - text_img.width / 2)
-    y = int(pic_height / 2 - 3.2 * text_img.height)
+    y = int(pic_height / 2 - 4.2 * text_img.height)
     img.paste(text_img, (x, y))
 
     if os.path.exists(file_path):
