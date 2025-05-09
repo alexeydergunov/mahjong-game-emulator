@@ -50,7 +50,7 @@ def create_text_image(text: str, width: int, height: int, font_size: int, angle:
     return result
 
 
-def draw_duplicate_wall(wall: DuplicateWall, overwrite_file: bool):
+def draw_duplicate_wall(wall: DuplicateWall, dead_wall_in_one_line: bool, overwrite_file: bool):
     pictures_dir = "wall_pictures"
     if not os.path.exists(pictures_dir):
         os.mkdir(pictures_dir)
@@ -178,20 +178,45 @@ def draw_duplicate_wall(wall: DuplicateWall, overwrite_file: bool):
     img.paste(text_img, (x, y))
 
     # Dead wall
-    for i, tile in enumerate(wall.dead_wall[-3::-2]):
-        tile_img = create_tile_image(tile=tile)
-        caption_img = create_text_image(text="D0" + str(i + 2), width=200, height=100, font_size=70)
-        y = int(pic_height / 2)
-        x = int(pic_width / 2 - 1.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
-        img.paste(caption_img, (x, y - caption_img.height))
-        img.paste(tile_img, (x, y))
-    for i, tile in enumerate(wall.dead_wall[11:9:-1] + wall.dead_wall[-4::-2]):
-        tile_img = create_tile_image(tile=tile)
-        caption_img = create_text_image(text="D1" + str(i), width=200, height=100, font_size=70)
-        y = int(pic_height / 2 + (tile_height + blank_space))
-        x = int(pic_width / 2 - 3.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
-        img.paste(caption_img, (x, y + tile_height - 30))
-        img.paste(tile_img, (x, y))
+    if dead_wall_in_one_line:
+        for i, tile in enumerate(wall.dead_wall[-3::-2]):
+            tile_img = create_tile_image(tile=tile)
+            caption_img = create_text_image(text="D0" + str(i + 2), width=200, height=100, font_size=70)
+            y = int(pic_height / 2 + 0.5 * (tile_height + blank_space))
+            x = int(pic_width / 2 + (i - 6) * (tile_width + blank_space))
+            img.paste(caption_img, (x, y - caption_img.height))
+            img.paste(tile_img, (x, y))
+        for i, tile in enumerate(wall.dead_wall[11:9:-1] + wall.dead_wall[-4::-2]):
+            tile_img = create_tile_image(tile=tile)
+            caption_img = create_text_image(text="D1" + str(i), width=200, height=100, font_size=70)
+            y = int(pic_height / 2 + 0.5 * (tile_height + blank_space))
+            x = int(pic_width / 2 + (i - 1) * (tile_width + blank_space))
+            img.paste(caption_img, (x, y + tile_height - 30))
+            img.paste(tile_img, (x, y))
+        # "Upper part" and "lower part" text
+        text_img = create_text_image(text="Upper part", width=500, height=150, font_size=70)
+        x = int(pic_width / 2 - 3.5 * (tile_width + blank_space) - text_img.width / 2)
+        y = int(pic_height / 2 + 0.5 * (tile_height + blank_space) - 1.6 * text_img.height)
+        img.paste(text_img, (x, y))
+        text_img = create_text_image(text="Lower part", width=500, height=150, font_size=70)
+        x = int(pic_width / 2 + 2.5 * (tile_width + blank_space) - text_img.width / 2)
+        y = int(pic_height / 2 + 1.5 * (tile_height + blank_space) + 0.4 * text_img.height)
+        img.paste(text_img, (x, y))
+    else:
+        for i, tile in enumerate(wall.dead_wall[-3::-2]):
+            tile_img = create_tile_image(tile=tile)
+            caption_img = create_text_image(text="D0" + str(i + 2), width=200, height=100, font_size=70)
+            y = int(pic_height / 2)
+            x = int(pic_width / 2 - 1.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
+            img.paste(caption_img, (x, y - caption_img.height))
+            img.paste(tile_img, (x, y))
+        for i, tile in enumerate(wall.dead_wall[11:9:-1] + wall.dead_wall[-4::-2]):
+            tile_img = create_tile_image(tile=tile)
+            caption_img = create_text_image(text="D1" + str(i), width=200, height=100, font_size=70)
+            y = int(pic_height / 2 + (tile_height + blank_space))
+            x = int(pic_width / 2 - 3.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
+            img.paste(caption_img, (x, y + tile_height - 30))
+            img.paste(tile_img, (x, y))
     # "Dead wall" text
     text_img = create_text_image(text="Dead wall", width=500, height=150, font_size=100)
     x = int(pic_width / 2 - text_img.width / 2)
