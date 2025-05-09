@@ -1,7 +1,9 @@
 import itertools
 import logging
 import os
+from collections import defaultdict
 from random import SystemRandom, Random
+from typing import Optional
 
 from drawing import drawing
 from emulator.emulator import SingleRoundEmulator
@@ -33,6 +35,7 @@ def main():
     r.shuffle(shuffled_tiles)
     logging.info("Shuffled tiles: %s", shuffled_tiles)
 
+    result_counts: dict[tuple[str, Optional[str], Optional[str]], int] = defaultdict(int)
     for i, p in enumerate(itertools.permutations(range(4))):
         wall = DuplicateWall(shuffled_tiles=shuffled_tiles)
         if i == 0:
@@ -50,7 +53,17 @@ def main():
             wall=wall,
             player_pth_files=[pth_files[p[0]], pth_files[p[1]], pth_files[p[2]], pth_files[p[3]]],
         )
-        emulator.process()
+        emulation_result = emulator.process()
+        if emulation_result["result"] == "draw":
+            result_counts[("draw", None, None)] += 1
+        else:
+            assert emulation_result["result"] == "win"
+            for win_desc in emulation_result["wins"]:
+                result_counts[(win_desc["win_type"], win_desc["winner"], win_desc.get("loser"))] += 1
+
+    logging.info("Round result counts:")
+    for result, count in sorted(result_counts.items(), key=lambda t: (t[1], t[0]), reverse=True):
+        logging.info("%s -> %d", result, count)
 
 
 if __name__ == "__main__":
