@@ -57,7 +57,7 @@ def draw_duplicate_wall(wall: DuplicateWall):
     file_path = get_file_path(pictures_dir=pictures_dir, wall=wall)
     logging.info("Will save picture to file %s", file_path)
 
-    pic_width = 4000
+    pic_width = 5500
     pic_height = 4000
     img = Image.new("RGB", (pic_width, pic_height), "white")
 
@@ -96,68 +96,84 @@ def draw_duplicate_wall(wall: DuplicateWall):
     # East wall
     for i, tile in enumerate(wall.walls[0][16::-2]):
         tile_img = create_tile_image(tile=tile)
+        caption_img = create_text_image(text="E0" + str(i), width=200, height=100, font_size=70)
         x = int(pic_width / 2 - 4.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         y = int(pic_height - 3.5 * tile_height - blank_space)
+        img.paste(caption_img, (x, y - caption_img.height))
         img.paste(tile_img, (x, y))
     for i, tile in enumerate(wall.walls[0][17::-2]):
         tile_img = create_tile_image(tile=tile)
+        caption_img = create_text_image(text="E1" + str(i), width=200, height=100, font_size=70)
         x = int(pic_width / 2 - 4.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         y = int(pic_height - 2.5 * tile_height)
+        img.paste(caption_img, (x, y + tile_height - 30))
         img.paste(tile_img, (x, y))
     # "East" text
     text_img = create_text_image(text="East", width=500, height=150, font_size=100)
     x = int(pic_width / 2 - text_img.width / 2)
-    y = int(pic_height - 3.5 * tile_height - blank_space - 1.2 * text_img.height)
+    y = int(pic_height - 4 * tile_height - blank_space - 1.2 * text_img.height)
     img.paste(text_img, (x, y))
 
     # South wall
     for i, tile in enumerate(wall.walls[1][16::-2]):
         tile_img = create_tile_image(tile=tile, angle=90)
+        caption_img = create_text_image(text="S0" + str(i), width=200, height=100, font_size=70, angle=90)
         y = int(pic_height / 2 + 4.5 * (tile_width + blank_space) - (i + 1) * (tile_width + blank_space))
         x = int(pic_width - 3.5 * tile_height - blank_space)
+        img.paste(caption_img, (x - caption_img.width, y))
         img.paste(tile_img, (x, y))
     for i, tile in enumerate(wall.walls[1][17::-2]):
         tile_img = create_tile_image(tile=tile, angle=90)
+        caption_img = create_text_image(text="S1" + str(i), width=200, height=100, font_size=70, angle=90)
         y = int(pic_height / 2 + 4.5 * (tile_width + blank_space) - (i + 1) * (tile_width + blank_space))
         x = int(pic_width - 2.5 * tile_height)
+        img.paste(caption_img, (x + tile_height - 30, y))
         img.paste(tile_img, (x, y))
     # "South" text
     text_img = create_text_image(text="South", width=500, height=150, font_size=100, angle=90)
-    x = int(pic_width - 3.5 * tile_height - blank_space - 1.2 * text_img.width)
+    x = int(pic_width - 4 * tile_height - blank_space - 1.2 * text_img.width)
     y = int(pic_height / 2 - text_img.height / 2)
     img.paste(text_img, (x, y))
 
     # West wall
     for i, tile in enumerate(wall.walls[2][::2]):
         tile_img = create_tile_image(tile=tile, angle=180)
+        caption_img = create_text_image(text="W0" + str(8 - i), width=200, height=100, font_size=70, angle=180)
         x = int(pic_width / 2 - 4.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         y = int(2.5 * tile_height + blank_space)
+        img.paste(caption_img, (x, y + tile_height))
         img.paste(tile_img, (x, y))
     for i, tile in enumerate(wall.walls[2][1::2]):
         tile_img = create_tile_image(tile=tile, angle=180)
+        caption_img = create_text_image(text="W1" + str(8 - i), width=200, height=100, font_size=70, angle=180)
         x = int(pic_width / 2 - 4.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         y = int(1.5 * tile_height)
+        img.paste(caption_img, (x, y - caption_img.height + 30))
         img.paste(tile_img, (x, y))
     # "West" text
     text_img = create_text_image(text="West", width=500, height=150, font_size=100, angle=180)
     x = int(pic_width / 2 - text_img.width / 2)
-    y = int(3.5 * tile_height + blank_space + 0.2 * text_img.height)
+    y = int(4 * tile_height + blank_space + 0.2 * text_img.height)
     img.paste(text_img, (x, y))
 
     # North wall
     for i, tile in enumerate(wall.walls[3][16::-2]):
         tile_img = create_tile_image(tile=tile, angle=-90)
+        caption_img = create_text_image(text="N0" + str(i), width=200, height=100, font_size=70, angle=-90)
         y = int(pic_height / 2 - 4.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         x = int(2.5 * tile_height) + blank_space
+        img.paste(caption_img, (x + tile_height, y))
         img.paste(tile_img, (x, y))
     for i, tile in enumerate(wall.walls[3][17::-2]):
         tile_img = create_tile_image(tile=tile, angle=-90)
+        caption_img = create_text_image(text="N1" + str(i), width=200, height=100, font_size=70, angle=-90)
         y = int(pic_height / 2 - 4.5 * (tile_width + blank_space) + i * (tile_width + blank_space))
         x = int(1.5 * tile_height)
+        img.paste(caption_img, (x - caption_img.width + 30, y))
         img.paste(tile_img, (x, y))
     # "North" text
     text_img = create_text_image(text="North", width=500, height=150, font_size=100, angle=-90)
-    x = int(3.5 * tile_height + blank_space + 0.2 * text_img.width)
+    x = int(4 * tile_height + blank_space + 0.2 * text_img.width)
     y = int(pic_height / 2 - text_img.height / 2)
     img.paste(text_img, (x, y))
 
